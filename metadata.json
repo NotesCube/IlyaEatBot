@@ -1,0 +1,5 @@
+{
+  "name": "CalorieBot Dashboard",
+  "description": "A Telegram bot interface and dashboard for calculating food calories using AI (Mocked for now). Built with React and grammY.",
+  "requestFramePermissions": []
+}
