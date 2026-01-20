@@ -11,23 +11,17 @@ export const handleMessage = async (ctx: Context) => {
   if (!photo && !text) return;
 
   // Let the user know we are thinking
-  const loadingMsg = await ctx.reply("⏳ Анализирую блюдо...");
+  const loadingMsg = await ctx.reply("⏳ Анализирую блюдо и считаю калории...");
 
   try {
     let imageUrl: string | null = null;
 
     // 1. Get Image URL if photo exists
     if (photo) {
-      // Get the largest file (highest resolution)
       const fileId = photo[photo.length - 1].file_id;
-      
-      // Get file path from Telegram API
-      // This returns a File object with file_path, it does NOT download the content yet.
       const file = await ctx.api.getFile(fileId);
       
       if (file.file_path) {
-        // Construct the direct URL to the file on Telegram servers
-        // OpenAI will download the image from this URL directly
         imageUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${file.file_path}`;
         logger.log('info', `Generated Image URL for OpenAI: ${imageUrl}`);
       } else {
@@ -41,35 +35,27 @@ export const handleMessage = async (ctx: Context) => {
       }
     }
 
-    // 2. Step 1: Analyze Dish (Structure)
-    // We pass the URL, not base64 data
-    const dishAnalysis = await openaiService.analyzeDish(imageUrl, text || null);
+    // 2. Single Step Analysis (Dish + Nutrition)
+    const result = await openaiService.analyzeFood(imageUrl, text || null);
     
-    // Check if AI failed to identify the dish
-    if (dishAnalysis.error || !dishAnalysis.dish || !dishAnalysis.estimated_weight_g) {
+    logger.log('info', `🧠 AI Full Result:\n${JSON.stringify(result, null, 2)}`);
+
+    // Check errors
+    if (result.error || !result.dish || !result.nutrition) {
        await ctx.api.editMessageText(
         ctx.chat!.id, 
         loadingMsg.message_id, 
-        "😕 Блюдо не распознано. Попробуйте еще раз (фото должно быть четким, или добавьте описание)."
+        "😕 Блюдо не распознано. Пожалуйста, убедитесь, что на фото еда, или уточните описание."
       );
+      logger.log('warn', 'AI returned error for analysis.');
       return;
     }
 
-    await ctx.api.editMessageText(
-      ctx.chat!.id, 
-      loadingMsg.message_id, 
-      `🥣 Блюдо определено: *${dishAnalysis.dish}*\n⚖️ Примерный вес: ${dishAnalysis.estimated_weight_g}г\n\nСчитаю калории...`,
-      { parse_mode: "Markdown" }
-    );
-
-    // 3. Step 2: Calculate Nutrition
-    const nutrition = await openaiService.calculateNutrition(dishAnalysis);
-
-    // 4. Format Output
-    const { total, per_100g } = nutrition;
+    // 3. Format Output
+    const { total, per_100g } = result.nutrition;
     
     const responseText = `
-🍽 *${dishAnalysis.dish}* (~${dishAnalysis.estimated_weight_g}г)
+🍽 *${result.dish}* (~${result.estimated_weight_g}г)
 
 *На всю порцию:*
 🔥 Калории: *${total.calories} ккал*
@@ -81,7 +67,9 @@ export const handleMessage = async (ctx: Context) => {
 🔥 ${per_100g.calories} ккал | Б: ${per_100g.protein} | Ж: ${per_100g.fat} | У: ${per_100g.carbs}
 `;
 
-    // 5. Final Reply
+    logger.log('success', `🤖 Sending Reply:\n${responseText.trim()}`);
+
+    // 4. Final Reply
     await ctx.api.deleteMessage(ctx.chat!.id, loadingMsg.message_id);
     await ctx.reply(responseText, { 
       parse_mode: "Markdown",
@@ -94,7 +82,7 @@ export const handleMessage = async (ctx: Context) => {
     await ctx.api.editMessageText(
       ctx.chat!.id, 
       loadingMsg.message_id, 
-      `❌ Произошла ошибка при анализе: ${error.message}`
+      `❌ Произошла ошибка: ${error.message}`
     );
   }
 };

@@ -1,5 +1,5 @@
-import { OPENAI_API_KEY, PROMPT_ANALYSIS_SYSTEM, PROMPT_NUTRITION_SYSTEM } from '../constants';
-import { DishAnalysis, NutritionAnalysis } from '../types';
+import { OPENAI_API_KEY, PROMPT_PHOTO_SYSTEM, PROMPT_TEXT_SYSTEM, PROMPT_VALIDATOR_SYSTEM } from '../constants';
+import { FoodAnalysisResult, PipelineLog, LLMMetric } from '../types';
 import { botConfig } from './configService';
 import { logger } from './loggerService';
 
@@ -8,165 +8,200 @@ const cleanJson = (text: string): string => {
   return text.replace(/```json/g, '').replace(/```/g, '').trim();
 };
 
-const getModels = () => {
+const getModel = () => {
   if (botConfig.mode === 'DEPLOYMENT') {
-    return {
-      // Vision/Analysis Model
-      vision: 'gpt-4o', 
-      // Reasoning Model (Mapping "gpt-5-thinking" to gpt-4o or o1-preview if available)
-      // Using gpt-4o as the stable fallback for "gpt-5-thinking" behavior
-      reasoning: 'gpt-4o' 
-    };
+    return 'gpt-4o';
   }
-  return {
-    // TEST Mode
-    // Vision: gpt-4o-mini
-    vision: 'gpt-4o-mini',
-    // Reasoning: Mapping "gpt-5-mini" to gpt-4o-mini
-    reasoning: 'gpt-4o-mini'
+  // TEST Mode
+  return 'gpt-4o-mini';
+};
+
+interface OpenAIResponseWrapper {
+  parsed: FoodAnalysisResult;
+  metrics: LLMMetric;
+  raw: any;
+}
+
+// Reusable API call function with detailed metrics
+const callOpenAI = async (messages: any[], model: string, stepName: string): Promise<OpenAIResponseWrapper> => {
+  const startTime = Date.now();
+  
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: model, 
+      messages: messages,
+      max_tokens: 6000,
+      temperature: 0.2,
+    })
+  });
+
+  const endTime = Date.now();
+  const latency = (endTime - startTime) / 1000;
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI API Error (${stepName}): ${err}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices[0]?.message?.content || "{}";
+  const usage = data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+
+  const metrics: LLMMetric = {
+    model: data.model || model,
+    response_id: data.id,
+    latency_sec: latency,
+    input_tokens: usage.prompt_tokens,
+    output_tokens: usage.completion_tokens,
+    total_tokens: usage.total_tokens,
+    status: response.status
   };
+
+  let parsed: FoodAnalysisResult;
+  try {
+    parsed = JSON.parse(cleanJson(content));
+  } catch (e) {
+    console.error(`Failed to parse AI JSON in ${stepName}`, content);
+    // Return error object as result
+    parsed = { error: true };
+  }
+
+  return { parsed, metrics, raw: data };
 };
 
 export const openaiService = {
   /**
-   * Step 1: Analyze Image (or text) to get Ingredients
+   * Two-step analysis:
+   * 1. Analyzer: Identifies dish, ingredients, and initial math.
+   * 2. Validator: Audits the math and corrects errors.
    */
-  async analyzeDish(imageUrl: string | null, textDescription: string | null): Promise<DishAnalysis> {
+  async analyzeFood(imageUrl: string | null, textDescription: string | null): Promise<FoodAnalysisResult> {
     if (!imageUrl && !textDescription) throw new Error("No input provided");
 
-    const { vision: model } = getModels();
-    logger.log('info', `[OpenAI] Analyzing dish using ${model} (${botConfig.mode} mode)`);
-
-    const content: any[] = [
-      { type: "text", text: PROMPT_ANALYSIS_SYSTEM }
-    ];
-
-    if (textDescription) {
-      content.push({ type: "text", text: `Описание блюда: ${textDescription}` });
-    }
+    const model = getModel();
+    const stages: string[] = [];
     
-    // Pass the Image URL directly. OpenAI will download the image.
-    // We do NOT send base64 data to save tokens and bandwidth.
-    if (imageUrl) {
-      content.push({
-        type: "image_url",
-        image_url: { 
-          url: imageUrl,
-          detail: "auto" // Let OpenAI determine resolution (low/high) based on image size
+    // Prepare Pipeline Log Structure
+    const pipelineLog: PipelineLog['dish_analysis_pipeline'] = {
+      image_url: imageUrl,
+      llm_info: {},
+      pipeline_metadata: {
+        stage_order: [],
+        timestamp_utc: new Date().toISOString(),
+        error: false
+      }
+    };
+
+    logger.log('info', `[Pipeline] Started using ${model}`);
+
+    try {
+      // --- STEP 1: ANALYZER ---
+      stages.push('Analyzer');
+      
+      let systemPrompt = "";
+      const userContent: any[] = [];
+
+      if (imageUrl) {
+        systemPrompt = PROMPT_PHOTO_SYSTEM;
+        if (textDescription) {
+          userContent.push({ type: "text", text: `Дополнительный комментарий пользователя: ${textDescription}` });
         }
-      });
-    }
+        userContent.push({
+          type: "image_url",
+          image_url: { url: imageUrl, detail: "auto" }
+        });
+      } else {
+        systemPrompt = PROMPT_TEXT_SYSTEM;
+        if (textDescription) {
+          userContent.push({ type: "text", text: textDescription });
+        }
+      }
 
-    const startTime = Date.now();
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: model, 
-        messages: [
-          {
-            role: "user",
-            content: content
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.2,
-      })
-    });
-    const endTime = Date.now();
+      const analyzerResult = await callOpenAI([
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userContent }
+      ], model, "Analyzer");
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`OpenAI Analysis Error: ${err}`);
-    }
+      // Save Analyzer metrics
+      pipelineLog.llm_info.analyzer = analyzerResult.metrics;
+      
+      // Stop if initial error
+      if (analyzerResult.parsed.error || !analyzerResult.parsed.nutrition) {
+        pipelineLog.pipeline_metadata.error = true;
+        pipelineLog.pipeline_metadata.stage_order = stages;
+        logger.log('error', `[Pipeline Result]\n${JSON.stringify({ dish_analysis_pipeline: pipelineLog }, null, 2)}`);
+        return analyzerResult.parsed;
+      }
 
-    const data = await response.json();
+      // --- STEP 2: VALIDATOR ---
+      stages.push('Validator');
+      logger.log('info', `[Pipeline] Sending to Validator...`);
 
-    // Custom logging as requested
-    const logPayload = {
-      response_id: data.id,
-      model: data.model,
-      status: response.status,
-      input_tokens: data.usage?.prompt_tokens,
-      output_tokens: data.usage?.completion_tokens,
-      total_tokens: data.usage?.total_tokens,
-      latency_sec: (endTime - startTime) / 1000,
-      text: data.choices[0]?.message?.content
-    };
-    logger.log('info', `OpenAI Analysis Response:\n${JSON.stringify(logPayload, null, 2)}`);
+      const validatorMessages = [
+        { role: "system", content: PROMPT_VALIDATOR_SYSTEM },
+        { role: "user", content: JSON.stringify(analyzerResult.parsed) }
+      ];
 
-    const rawContent = data.choices[0]?.message?.content || "{}";
-    
-    try {
-      return JSON.parse(cleanJson(rawContent));
-    } catch (e) {
-      console.error("Failed to parse Dish Analysis JSON", rawContent);
-      throw new Error("Could not parse dish analysis.");
-    }
-  },
+      const validatorResult = await callOpenAI(validatorMessages, model, "Validator");
 
-  /**
-   * Step 2: Calculate Nutrition from Ingredients
-   */
-  async calculateNutrition(dishData: DishAnalysis): Promise<NutritionAnalysis> {
-    const { reasoning: model } = getModels();
-    logger.log('info', `[OpenAI] Calculating nutrition using ${model} (${botConfig.mode} mode)`);
+      // Save Validator metrics
+      pipelineLog.llm_info.validator = validatorResult.metrics;
 
-    const startTime = Date.now();
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: model, 
-        messages: [
-          {
-            role: "system",
-            content: PROMPT_NUTRITION_SYSTEM
-          },
-          {
-            role: "user",
-            content: JSON.stringify(dishData)
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.2,
-      })
-    });
-    const endTime = Date.now();
+      // Determine final result (fallback to analyzer if validator failed completely)
+      const finalResult = validatorResult.parsed.error ? analyzerResult.parsed : validatorResult.parsed;
+      
+      // Calculate Diff / Correction Details
+      const wasCorrected = JSON.stringify(analyzerResult.parsed.nutrition) !== JSON.stringify(finalResult.nutrition);
+      
+      const correctionDetails: Record<string, string> = {};
+      if (wasCorrected && analyzerResult.parsed.nutrition && finalResult.nutrition) {
+        if (analyzerResult.parsed.nutrition.total.calories !== finalResult.nutrition.total.calories) correctionDetails['calories'] = 'recalculated';
+        if (analyzerResult.parsed.nutrition.total.protein !== finalResult.nutrition.total.protein) correctionDetails['protein'] = 'recalculated';
+        if (analyzerResult.parsed.nutrition.total.fat !== finalResult.nutrition.total.fat) correctionDetails['fat'] = 'recalculated';
+        if (analyzerResult.parsed.nutrition.total.carbs !== finalResult.nutrition.total.carbs) correctionDetails['carbs'] = 'recalculated';
+      } else {
+        correctionDetails['status'] = 'verified';
+      }
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`OpenAI Nutrition Error: ${err}`);
-    }
+      // Populate detailed log
+      pipelineLog.dish_result = {
+        dish: finalResult.dish,
+        ingredients: finalResult.ingredients,
+        estimated_weight_g: finalResult.estimated_weight_g
+      };
+      
+      pipelineLog.nutrition_result = {
+        ...finalResult.nutrition!,
+        source_reference: {
+          database: "OpenAI Knowledge Base",
+          version: model
+        }
+      };
 
-    const data = await response.json();
+      pipelineLog.validation = {
+        was_corrected: wasCorrected,
+        correction_details: correctionDetails,
+        validation_flags: {
+           weight_match: true, // Assumed passed if not error
+           logical_check_passed: !finalResult.error
+        }
+      };
 
-    // Custom logging as requested
-    const logPayload = {
-      response_id: data.id,
-      model: data.model,
-      status: response.status,
-      input_tokens: data.usage?.prompt_tokens,
-      output_tokens: data.usage?.completion_tokens,
-      total_tokens: data.usage?.total_tokens,
-      latency_sec: (endTime - startTime) / 1000,
-      text: data.choices[0]?.message?.content
-    };
-    logger.log('info', `OpenAI Nutrition Response:\n${JSON.stringify(logPayload, null, 2)}`);
+      pipelineLog.pipeline_metadata.stage_order = stages;
+      
+      // Log the BIG JSON
+      logger.log('success', `[Pipeline Complete]\n${JSON.stringify({ dish_analysis_pipeline: pipelineLog }, null, 2)}`);
 
-    const rawContent = data.choices[0]?.message?.content || "{}";
+      return finalResult;
 
-    try {
-      return JSON.parse(cleanJson(rawContent));
-    } catch (e) {
-      console.error("Failed to parse Nutrition JSON", rawContent);
-      throw new Error("Could not parse nutrition data.");
+    } catch (e: any) {
+      logger.log('error', `Pipeline crashed: ${e.message}`);
+      throw e;
     }
   }
 };

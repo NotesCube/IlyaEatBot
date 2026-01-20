@@ -1,0 +1,215 @@
+.app-container {
+  min-height: 100vh;
+  /* Background handled by body for full coverage */
+  padding-bottom: 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background-color: var(--bg-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: all 0.3s ease;
+}
+
+.app-header-content {
+  max-width: 72rem; /* Wider container */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4.5rem; /* Taller header */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (min-width: 1024px) {
+  .app-header-content {
+    padding: 0 2.5rem;
+  }
+}
+
+.app-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-logo-icon {
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  padding: 0.6rem;
+  border-radius: var(--radius-xl);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.app-theme-toggle {
+  background: var(--bg-subtle);
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-theme-toggle:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.app-meta-section {
+  display: none; /* Hide on small screens to clean up */
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-full);
+}
+
+@media (min-width: 640px) {
+  .app-meta-section {
+    display: flex;
+  }
+}
+
+.app-main {
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  box-sizing: border-box;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@media (min-width: 1024px) {
+  .app-main {
+    padding: 3rem 2.5rem;
+  }
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .app-grid {
+    grid-template-columns: 22rem 1fr; /* Fixed width sidebar */
+  }
+}
+
+.app-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: sticky;
+  top: 6rem; /* Sticky sidebar effect */
+}
+
+/* Info Card / File List Styles */
+.app-file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.app-file-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.app-code-badge {
+  background-color: var(--bg-code);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--text-code);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.app-right-column-header {
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.app-right-column-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.app-right-column-header p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.app-error-box {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background-color: var(--bg-danger-subtle);
+  border: 1px solid var(--border-danger);
+  border-radius: var(--radius-xl);
+  font-size: 0.875rem;
+  color: var(--text-danger);
+  animation: fadeIn 0.3s ease;
+}
+
+.app-error-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.app-error-list {
+  list-style-type: decimal;
+  list-style-position: inside;
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}

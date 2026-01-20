@@ -1,0 +1,212 @@
+.bsc-card {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(8px);
+  padding: 1.75rem;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.bsc-card:hover {
+  box-shadow: var(--shadow-glow);
+  border-color: var(--border-accent);
+}
+
+.bsc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.bsc-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.bsc-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Status Badge - Modern Pill */
+.bsc-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.bsc-status-running {
+  background-color: var(--bg-success-subtle);
+  color: var(--text-success);
+  box-shadow: 0 0 0 1px var(--border-success);
+}
+
+.bsc-status-error {
+  background-color: var(--bg-danger-subtle);
+  color: var(--text-danger);
+  box-shadow: 0 0 0 1px var(--border-danger);
+}
+
+.bsc-status-default {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+  box-shadow: 0 0 0 1px var(--border-color);
+}
+
+.bsc-mode-container {
+  margin-bottom: 2rem;
+}
+
+.bsc-mode-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.85rem;
+  margin-left: 0.25rem;
+}
+
+.bsc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Mode Buttons - Card Style */
+.bsc-mode-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Left align */
+  justify-content: center;
+  padding: 1rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  cursor: pointer;
+  background-color: var(--bg-page); /* Inner contrast */
+}
+
+.bsc-mode-btn-test {
+  border-color: var(--indigo-400);
+  background-color: var(--bg-accent-subtle);
+  color: var(--text-accent);
+}
+
+.bsc-mode-btn-deploy {
+  border-color: var(--purple-400);
+  background-color: var(--bg-deploy-subtle);
+  color: var(--text-deploy);
+}
+
+.bsc-mode-btn-inactive {
+  border-color: var(--border-color);
+  background-color: var(--bg-page);
+  color: var(--text-muted);
+}
+
+.bsc-mode-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.bsc-mode-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.bsc-mode-subtext {
+  font-size: 0.7rem; 
+  opacity: 0.8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.bsc-active-dot {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.bsc-dot-indigo {
+  background-color: var(--indigo-500);
+  color: var(--indigo-500);
+}
+
+.bsc-dot-purple {
+  background-color: var(--purple-500);
+  color: var(--purple-500);
+}
+
+.bsc-actions {
+  display: flex;
+  align-items: center;
+}
+
+.bsc-main-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius-full); /* Fully rounded button */
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+}
+
+.bsc-btn-stop {
+  background-color: var(--bg-page);
+  color: var(--text-danger);
+  border: 1px solid var(--border-danger);
+}
+
+.bsc-btn-stop:hover {
+  background-color: var(--bg-danger-subtle);
+  transform: translateY(-1px);
+}
+
+.bsc-btn-start {
+  background: linear-gradient(135deg, var(--indigo-600), var(--indigo-700));
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.bsc-btn-start:hover {
+  background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+.bsc-btn-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
