@@ -1,5 +1,5 @@
 import { Context } from 'grammy';
-import { TELEGRAM_BOT_TOKEN } from '../../constants';
+import { TELEGRAM_BOT_TOKEN, CALCULATE_BUTTON_TEXT } from '../../constants';
 import { openaiService } from '../openaiService';
 import { logger } from '../loggerService';
 
@@ -7,8 +7,11 @@ export const handleMessage = async (ctx: Context) => {
   const photo = ctx.message?.photo;
   const text = ctx.message?.text;
 
-  // Only process if it looks like a food query (photo or text)
+  // 1. Validation: Ensure we have content
   if (!photo && !text) return;
+
+  // 2. Filter: Ignore if the text matches our navigation buttons (handled by botService.hears)
+  if (text === CALCULATE_BUTTON_TEXT) return;
 
   // Let the user know we are thinking
   const loadingMsg = await ctx.reply("⏳ Анализирую блюдо и считаю калории...");

@@ -1,14 +1,36 @@
-export const TELEGRAM_BOT_TOKEN = "8298054149:AAEvmXLe747wpZKh4V56_fRWeO042KES-7c";
-export const OPENAI_API_KEY = "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";
+import { xorDecrypt } from './utils/crypto';
+
+export const TELEGRAM_BOT_TOKEN_ENC =
+  "SldYW0QYTF5GFFEkODcTDDs4SE9bRVobPzIaUTdWQnIePSVIJFVNQC4kMFkaGw==";
+
+export const OPENAI_API_KEY_ENC =
+  "AQ5MEAJOGQwRWUYyOh4ANS4OFCw8Cn4lACgYEFAGFXgABAFyWCI8Sy8YMQBmSAYBFQEIL18IESBFaDI5O24MJAgiIQ8kM24OWkAeWRcAXx1RMR8ZTjtBbwcHEjQvCARFeh0sCklYEkwaLAlXHxkuCgZ7KTc3PwQCJARLKxlFXykkLxUxJg8AekxfHUpeCRAdNQkQTUxMJSdaHRMmBCgJGhB8PjAEaCo=";
+
+const KEY = "react-xor-key";
+
+export const TELEGRAM_BOT_TOKEN = xorDecrypt(TELEGRAM_BOT_TOKEN_ENC, KEY);
+export const OPENAI_API_KEY = xorDecrypt(OPENAI_API_KEY_ENC, KEY);
+
+export const CALCULATE_BUTTON_TEXT = "🥗 Посчитать калории";
 
 export const WELCOME_MESSAGE = `
-Привет! Я CalorieBot. 🥗
-Нажми /calculate или выбери эту команду в меню, чтобы начать подсчет калорий.
+🎉 *Привет!*
+
+Я CalorieBot. Я помогу тебе посчитать калории по фото.
+Нажми кнопку *"${CALCULATE_BUTTON_TEXT}"* внизу, чтобы начать.
 Просто отправь мне фото или описание еды!
 `;
 
 export const UNKNOWN_CALORIES_RESPONSE = "Калорийность пока неизвестна (ожидается подключение AI)";
-export const WAITING_FOR_INPUT_RESPONSE = "Пожалуйста, отправьте фото или текстовое описание блюда.";
+export const WAITING_FOR_INPUT_RESPONSE = `Отлично! Теперь отправьте фото блюда 📸
+
+Вы можете отправить:
+• Просто фото
+• Фото с подписью
+• Или просто текст
+
+💡 **Что написать в описании?**
+Укажите название блюда, примерный вес, способ приготовления или скрытые ингредиенты (например: «салат с маслом», «жареное на сале», «кофе с сахаром») — так расчет будет точнее!`;
 
 // --- AI Prompts ---
 

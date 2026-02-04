@@ -1,10 +1,14 @@
-import { Bot, Context } from 'grammy';
-import { TELEGRAM_BOT_TOKEN, WELCOME_MESSAGE } from '../constants';
-import { handleCalculateCommand } from './handlers/calculate';
+import { Bot, Context, Keyboard } from 'grammy';
+import { 
+  TELEGRAM_BOT_TOKEN, 
+  CALCULATE_BUTTON_TEXT, 
+  WELCOME_MESSAGE, 
+  WAITING_FOR_INPUT_RESPONSE 
+} from '../constants';
 import { handleMessage } from './handlers/message';
 import { logger } from './loggerService';
 
-// Define a custom context if needed in the future
+// Standard Context without Session
 type MyContext = Context;
 
 class BotService {
@@ -25,24 +29,51 @@ class BotService {
       logger.log('info', 'Initializing CalorieBot...');
       this.bot = new Bot<MyContext>(TELEGRAM_BOT_TOKEN);
       
-      // Middleware for logging
+      // 1. Logging Middleware
       this.bot.use(async (ctx, next) => {
         const user = ctx.from?.first_name || 'Unknown';
-        logger.log('info', `Received update from ${user} [ID: ${ctx.from?.id}]`);
+        // Only log if not just spamming typing events
+        if (ctx.message || ctx.callbackQuery) {
+          logger.log('info', `Received update from ${user} [ID: ${ctx.from?.id}]`);
+        }
         await next();
       });
 
-      // Command Handlers
-      this.bot.command("start", (ctx) => ctx.reply(WELCOME_MESSAGE));
-      this.bot.command("calculate", (ctx) => {
-        logger.log('info', `Processing /calculate command from ${ctx.from?.first_name}`);
-        return handleCalculateCommand(ctx);
+      // --- COMMANDS ---
+
+      // Start command
+      this.bot.command("start", async (ctx) => {
+        const userId = ctx.from?.id;
+        if (!userId) return;
+        
+        logger.log('info', `User ${userId} started the bot.`);
+        
+        const keyboard = new Keyboard()
+          .text(CALCULATE_BUTTON_TEXT)
+          .resized();
+        
+        await ctx.reply(WELCOME_MESSAGE, { 
+          reply_markup: keyboard,
+          parse_mode: "Markdown"
+        });
       });
 
-      // Message Handlers
-      this.bot.on(["message:photo", "message:text"], (ctx) => {
-        logger.log('info', `Processing message from ${ctx.from?.first_name}`);
-        return handleMessage(ctx);
+      // Define Calculate Logic (Used for Button and Command)
+      const onCalculate = async (ctx: Context) => {
+        logger.log('info', `Processing Calculate request from ${ctx.from?.first_name}`);
+        await ctx.reply(WAITING_FOR_INPUT_RESPONSE);
+      };
+
+      // Handle the Keyboard Button click (matches the text)
+      this.bot.hears(CALCULATE_BUTTON_TEXT, onCalculate);
+
+      // Keep /calculate as a fallback command
+      this.bot.command("calculate", onCalculate);
+
+      // --- GENERAL MESSAGES ---
+      // Complex message handling (AI analysis) stays in its own file
+      this.bot.on(["message:photo", "message:text"], async (ctx) => {
+         return handleMessage(ctx);
       });
 
       // Error Handling
@@ -53,30 +84,24 @@ class BotService {
       // Set the menu commands
       logger.log('info', 'Setting up bot menu commands...');
       await this.bot.api.setMyCommands([
-        { command: "start", description: "Запустить бота" },
-        { command: "calculate", description: "Посчитать калории" },
+        { command: "start", description: "Запустить / Главная" },
       ]);
       logger.log('success', 'Menu commands set.');
 
       // Start polling
-      // Note: In a browser environment, polling standard Telegram API might hit CORS.
-      // We wrap this in a try/catch to inform the user if it fails.
       this.abortController = new AbortController();
       
-      // Initialize to ensure connection is valid before returning "success" to the UI
       await this.bot.init();
       logger.log('success', `Bot connected as @${this.bot.botInfo.username}`);
 
-      // Start the long-polling loop WITHOUT awaiting it (non-blocking)
-      // If we await this, the UI button will spin forever because bot.start() never resolves until stop()
+      // Start the long-polling loop
       this.bot.start({
         allowed_updates: ["message", "callback_query"],
         onStart: () => {
            // Info already logged via init
         }
       }).catch((err) => {
-         // Capture errors that occur during the long-polling loop
-         if (this.bot) { // Only log if we didn't intentionally stop it
+         if (this.bot) { 
              logger.log('error', `Polling error: ${err.message}`);
          }
       });
@@ -84,7 +109,7 @@ class BotService {
     } catch (error: any) {
       logger.log('error', `Failed to start bot: ${error.message || error}`);
       if (error.message && error.message.includes('fetch')) {
-         logger.log('warn', 'CORS Error detected. Telegram Bots usually require a Node.js backend. This dashboard demonstrates the logic structure.');
+         logger.log('warn', 'CORS Error detected. Telegram Bots usually require a Node.js backend.');
       }
       this.stop();
       throw error;

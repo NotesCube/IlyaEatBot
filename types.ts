@@ -20,7 +20,7 @@ export interface BotState {
   processedCount: number;
 }
 
-// AI Response Types
+// --- AI Response Types ---
 
 export interface Ingredient {
   name: string;

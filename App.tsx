@@ -17,9 +17,18 @@ export function App() {
   // Theme State
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme === 'dark' ? 'dark' : 'light';
+      }
+      // Check system preference
+      // Only return 'light' if the system explicitly requests it.
+      // Otherwise (Dark, No Preference, or Detection Failed), default to 'dark'.
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        return 'light';
+      }
     }
-    return 'light';
+    return 'dark';
   });
 
   const addLog = useCallback((entry: LogEntry) => {

@@ -36,7 +36,7 @@ const callOpenAI = async (messages: any[], model: string, stepName: string): Pro
       model: model, 
       messages: messages,
       max_tokens: 6000,
-      temperature: 0.2,
+      temperature: 0.2, 
     })
   });
 
