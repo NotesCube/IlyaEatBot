@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
     
+    
   },
   "dependencies": {
     "grammy": "^1.39.3",
