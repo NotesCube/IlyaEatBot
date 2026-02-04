@@ -1,5 +1,6 @@
 {
-  "name": "caloriebot-dashboard",
+  "name": "ilya-eat-bot",
+  "homepage": "https://notescube.github.io/IlyaEatBot/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,9 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
-    
-    
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "grammy": "^1.39.3",
