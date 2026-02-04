@@ -1,4 +1,4 @@
-.term-container {
+.termContainer {
   background-color: #0f1115; /* Deep dark code bg */
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
@@ -10,7 +10,7 @@
   border: 1px solid var(--border-color);
 }
 
-.term-header {
+.termHeader {
   background-color: #1a1d24;
   padding: 0.75rem 1.25rem;
   display: flex;
@@ -19,13 +19,13 @@
   border-bottom: 1px solid #2a2e37;
 }
 
-.term-title-section {
+.termTitleSection {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.term-title {
+.termTitle {
   font-size: 0.8rem;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -35,35 +35,35 @@
 }
 
 /* macOS style dots */
-.term-controls {
+.termControls {
   display: flex;
   gap: 0.5rem;
 }
 
-.term-dot {
+.termDot {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
   transition: opacity 0.2s;
 }
 
-.term-dot:hover {
+.termDot:hover {
   opacity: 0.8;
 }
 
-.term-dot-red {
+.termDotRed {
   background-color: #ef4444;
 }
 
-.term-dot-yellow {
+.termDotYellow {
   background-color: #eab308;
 }
 
-.term-dot-green {
+.termDotGreen {
   background-color: #22c55e;
 }
 
-.term-content {
+.termContent {
   flex: 1;
   padding: 1.25rem;
   overflow-y: auto;
@@ -76,16 +76,16 @@
   color: #e5e7eb;
 }
 
-.term-content ::-webkit-scrollbar {
+.termContent::-webkit-scrollbar {
   width: 8px;
 }
 
-.term-content ::-webkit-scrollbar-thumb {
+.termContent::-webkit-scrollbar-thumb {
   background-color: #374151;
   border: 2px solid #0f1115; /* Padding effect */
 }
 
-.term-empty-state {
+.termEmptyState {
   color: #4b5563;
   font-style: italic;
   display: flex;
@@ -95,14 +95,14 @@
   opacity: 0.7;
 }
 
-.term-log-entry {
+.termLogEntry {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
   animation: fadeIn 0.2s ease-out;
 }
 
-.term-timestamp {
+.termTimestamp {
   color: #4b5563;
   flex-shrink: 0;
   user-select: none;
@@ -110,14 +110,20 @@
   padding-top: 0.1rem;
 }
 
-.term-message {
+.termMessage {
   word-break: break-all;
   white-space: pre-wrap;
 }
 
 /* Log Colors - Refined */
-.term-text-info { color: #60a5fa; }
-.term-text-warn { color: #fbbf24; }
-.term-text-error { color: #f87171; }
-.term-text-success { color: #4ade80; }
-.term-text-default { color: #d1d5db; }
+.termTextInfo { color: #60a5fa; }
+.termTextWarn { color: #fbbf24; }
+.termTextError { color: #f87171; }
+.termTextSuccess { color: #4ade80; }
+.termTextDefault { color: #d1d5db; }
+
+/* Анимация fadeIn */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}

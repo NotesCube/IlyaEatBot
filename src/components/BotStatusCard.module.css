@@ -1,4 +1,4 @@
-.bsc-card {
+.bscCard {
   background-color: var(--bg-card);
   backdrop-filter: blur(8px);
   padding: 1.75rem;
@@ -8,19 +8,19 @@
   transition: all 0.3s ease;
 }
 
-.bsc-card:hover {
+.bscCard:hover {
   box-shadow: var(--shadow-glow);
   border-color: var(--border-accent);
 }
 
-.bsc-header {
+.bscHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
 }
 
-.bsc-title {
+.bscTitle {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-main);
@@ -28,7 +28,7 @@
   letter-spacing: -0.02em;
 }
 
-.bsc-subtitle {
+.bscSubtitle {
   font-size: 0.875rem;
   color: var(--text-muted);
   margin: 0;
@@ -36,7 +36,7 @@
 }
 
 /* Status Badge - Modern Pill */
-.bsc-status-badge {
+.bscStatusBadge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -49,29 +49,29 @@
   transition: all 0.3s ease;
 }
 
-.bsc-status-running {
+.bscStatusRunning {
   background-color: var(--bg-success-subtle);
   color: var(--text-success);
   box-shadow: 0 0 0 1px var(--border-success);
 }
 
-.bsc-status-error {
+.bscStatusError {
   background-color: var(--bg-danger-subtle);
   color: var(--text-danger);
   box-shadow: 0 0 0 1px var(--border-danger);
 }
 
-.bsc-status-default {
+.bscStatusDefault {
   background-color: var(--bg-subtle);
   color: var(--text-muted);
   box-shadow: 0 0 0 1px var(--border-color);
 }
 
-.bsc-mode-container {
+.bscModeContainer {
   margin-bottom: 2rem;
 }
 
-.bsc-mode-label {
+.bscModeLabel {
   display: block;
   font-size: 0.75rem;
   font-weight: 700;
@@ -82,18 +82,18 @@
   margin-left: 0.25rem;
 }
 
-.bsc-grid {
+.bscGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
 /* Mode Buttons - Card Style */
-.bsc-mode-btn {
+.bscModeBtn {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Left align */
+  align-items: flex-start;
   justify-content: center;
   padding: 1rem;
   border-radius: var(--radius-xl);
@@ -101,33 +101,33 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   cursor: pointer;
-  background-color: var(--bg-page); /* Inner contrast */
+  background-color: var(--bg-page);
 }
 
-.bsc-mode-btn-test {
+.bscModeBtnTest {
   border-color: var(--indigo-400);
   background-color: var(--bg-accent-subtle);
   color: var(--text-accent);
 }
 
-.bsc-mode-btn-deploy {
+.bscModeBtnDeploy {
   border-color: var(--purple-400);
   background-color: var(--bg-deploy-subtle);
   color: var(--text-deploy);
 }
 
-.bsc-mode-btn-inactive {
+.bscModeBtnInactive {
   border-color: var(--border-color);
   background-color: var(--bg-page);
   color: var(--text-muted);
 }
 
-.bsc-mode-btn:hover {
+.bscModeBtn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.bsc-mode-content {
+.bscModeContent {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -136,13 +136,13 @@
   font-size: 0.8rem;
 }
 
-.bsc-mode-subtext {
-  font-size: 0.7rem; 
+.bscModeSubtext {
+  font-size: 0.7rem;
   opacity: 0.8;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
 }
 
-.bsc-active-dot {
+.bscActiveDot {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -152,29 +152,29 @@
   box-shadow: 0 0 8px currentColor;
 }
 
-.bsc-dot-indigo {
+.bscDotIndigo {
   background-color: var(--indigo-500);
   color: var(--indigo-500);
 }
 
-.bsc-dot-purple {
+.bscDotPurple {
   background-color: var(--purple-500);
   color: var(--purple-500);
 }
 
-.bsc-actions {
+.bscActions {
   display: flex;
   align-items: center;
 }
 
-.bsc-main-button {
+.bscMainButton {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
   padding: 0.85rem 1.5rem;
-  border-radius: var(--radius-full); /* Fully rounded button */
+  border-radius: var(--radius-full);
   font-weight: 600;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -182,31 +182,59 @@
   font-size: 1rem;
 }
 
-.bsc-btn-stop {
+.bscBtnStop {
   background-color: var(--bg-page);
   color: var(--text-danger);
   border: 1px solid var(--border-danger);
 }
 
-.bsc-btn-stop:hover {
+.bscBtnStop:hover {
   background-color: var(--bg-danger-subtle);
   transform: translateY(-1px);
 }
 
-.bsc-btn-start {
+.bscBtnStart {
   background: linear-gradient(135deg, var(--indigo-600), var(--indigo-700));
   color: var(--white);
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
-.bsc-btn-start:hover {
+.bscBtnStart:hover {
   background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
 }
 
-.bsc-btn-loading {
+.bscBtnLoading {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Анимации (если нужно для pulse и spin) */
+.animatePulse {
+  animation: pulse 2s infinite;
+}
+
+.animateSpin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
